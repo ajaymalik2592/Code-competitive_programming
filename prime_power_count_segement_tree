@@ -1,0 +1,116 @@
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+int v[4000001];
+vector<int> prime(1000001, 0);
+void build(int a[], int v1, int l, int r)
+{
+	if(l == r)
+		v[v1] = a[l];
+	else
+	{
+		int mid = l+ (r-l)/2;
+		build(a, v1*2,l, mid);
+		build(a, v1*2 +1, mid + 1, r);
+		v[v1] = max(v[2*v1] , v[2*v1 + 1]);
+	}
+}
+void update(int v1, int l1, int r1, int val, int index)
+{
+	if(l1 <= r1)
+		{
+			if(l1 == r1 && l1 == index)
+			{
+				v[v1] = v[v1]  + val;
+			}
+			else
+			{
+				int mid = l1 + (r1 - l1)/2;
+				if(index <= mid)
+					update(v1*2, l1, mid, val, index);
+				else
+					update(v1*2 + 1, mid+1, r1, val, index);
+				v[v1] = max(v[v1*2], v[v1*2 + 1]);
+
+			}
+		}
+}
+void sieve()
+{
+	for(int x =2; x<1e6+ 1; x++)
+	{
+		
+		if(!prime[x])
+		{
+			prime[x] = x;
+			for(int y =2*x; y<= 1e6; y+=x)
+			{
+				prime[y] = x;
+			}
+		}
+	}
+}
+int main()
+{
+	memset(v, 0, 16000004);
+	prime[1] = 1;
+
+	// ios_base::sync_with_stdio(0);cin.tie(0);
+	int n;
+	cin >> n;
+	int q;
+	cin >> q;
+	vector<int> vec(n);
+	for(auto &a: vec)cin >> a;
+	int arr[1000005];
+	memset(arr, 0 , 4000020);
+	sieve();
+	for(int x =0; x<n; x++)
+	{
+		map<int,int> ma;
+		int j = vec[x];
+		while(j > 1)
+		{
+			ma[prime[j]]++;
+			j /= prime[j];
+		}
+		for(auto a: ma)
+		{
+			arr[a.first]+= a.second;
+		}
+
+	}
+	
+	build(arr, 1, 0, 1000000);
+	for(int x =0; x<q; x++)
+	{
+		int index, val;
+		cin >> index >> val;
+		int j = vec[index-1];
+		map<int,int> ma;
+		while(j > 1)
+		{
+			ma[prime[j]]++;
+			j/= prime[j];
+		}
+		for(auto &a : ma)
+		{
+
+			a.second *= -1;
+			update(1, 0, 1000000,  a.second, a.first);
+		}
+		ma.clear();
+		j = vec[index-1] = val;
+		while(j > 1)
+		{
+			ma[prime[j]]++;
+			j/= prime[j];
+		}
+		for(auto a : ma)
+		{
+			update(1, 0, 1000000, a.second, a.first);
+		}
+		cout << v[1] << "\n";
+
+	}
+}
